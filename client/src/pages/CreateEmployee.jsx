@@ -98,34 +98,103 @@ function CreateEmployee() {
     };
 
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    // const handleSubmit = async (e) => {
+    //     e.preventDefault();
 
-        if (course.length === 0) {
+    //     if (course.length === 0) {
+    //       setError('Please select at least one degree.');
+    //       return;
+    //     }
+
+    //     try {
+    //         const response = await axios.post('http://localhost:3333/newEemployee', {
+    //             name,
+    //             email,
+    //             mobile,
+    //             gender,
+    //             selectedRole,
+    //             course
+    //         });
+
+
+
+    //         toast.success('Create Employee Successful');
+    //         navigate('/dashboard/employeeList');
+
+    //     } catch (err) {
+    //         setError(err.response?.data?.message || 'Create Employee Failed');
+    //     }
+    // };
+
+    // const handleSubmit = async (e) => {
+    //   e.preventDefault();
+    
+    //   if (course.length === 0) {
+    //     setError('Please select at least one degree.');
+    //     return;
+    //   }
+    
+    //   // Create a new FormData object
+    //   const formData = new FormData();
+    //   formData.append('name', name);
+    //   formData.append('email', email);
+    //   formData.append('mobile', mobile);
+    //   formData.append('gender', gender);
+    //   formData.append('selectedRole', selectedRole);
+    //   formData.append('course', course);
+    //   formData.append('image', file); // Append the selected file
+    
+    //   try {
+    //     const response = await axios.post('http://localhost:3333/newEemployee', formData, {
+    //       headers: {
+    //         'Content-Type': 'multipart/form-data',
+    //       },
+    //     });
+    
+    //     toast.success('Create Employee Successful');
+    //     navigate('/dashboard/employeeList');
+    
+    //   } catch (err) {
+    //     setError(err.response?.data?.message || 'Create Employee Failed');
+    //   }
+    // };
+
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+  
+      if (course.length === 0) {
           setError('Please select at least one degree.');
           return;
-        }
-
-        try {
-            const response = await axios.post('http://localhost:3333/newEemployee', {
-                name,
-                email,
-                mobile,
-                gender,
-                selectedRole,
-                course
-            });
-
-
-
-            toast.success('Create Employee Successful');
-            navigate('/dashboard/employeeList');
-
-        } catch (err) {
-            setError(err.response?.data?.message || 'Create Employee Failed');
-        }
-    };
-
+      }
+  
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('email', email);
+      formData.append('mobile', mobile);
+      formData.append('gender', gender);
+      formData.append('selectedRole', selectedRole);
+      for (let i = 0; i < course?.length; i++) {
+        formData.append(`course[]`, course[i]);
+      } 
+      formData.append('image', file);
+  
+      try {
+          const response = await axios.post('http://localhost:3333/newEemployee', formData, {
+              headers: {
+                  'Content-Type': 'multipart/form-data',
+              },
+          });
+  
+          toast.success('Create Employee Successful');
+          navigate('/dashboard/employeeList');
+  
+      } catch (err) {
+          setError(err.response?.data?.message || 'Create Employee Failed');
+      }
+  };
+  
+    
 
     return (
         <Wrapper>

@@ -9,6 +9,42 @@ export const app = express();
 const PORT = 3333;
 const secretKey = "your_secret_key"; 
 const MONGO_URL = "mongodb+srv://jobify:jobify1234@cluster0.mxmqnga.mongodb.net";
+import { fileURLToPath } from 'url';
+
+
+import multer from 'multer';
+import path from 'path';
+// Get the directory name
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve static files from the 'uploads' directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Configure multer to save images in the 'uploads' directory
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); // Ensure this directory exists
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    const filetypes = /jpeg|jpg|png/;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = filetypes.test(file.mimetype);
+
+    if (extname && mimetype) {
+      return cb(null, true);
+    } else {
+      cb('Error: Images only!');
+    }
+  }
+});
 
 export const client = new MongoClient(MONGO_URL);
 client.connect();
@@ -125,8 +161,44 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.post("/newEemployee", async (req, res) => {
-  const { name, email, mobile, selectedRole , gender, course } = req.body;
+// app.post("/newEemployee", async (req, res) => {
+//   const { name, email, mobile, selectedRole , gender, course } = req.body;
+//   const createDate = new Date().toISOString().split('T')[0];
+
+//   try {
+//     const existingEmployee = await client.db("Jobify").collection("employeeList").findOne({
+//       $or: [{ email }, { mobile }]
+//     });
+
+//     if (existingEmployee) {
+//       const conflictField = existingEmployee.email === email ? "email" : "mobile number";
+//       return res.status(400).send({
+//         status: 0,
+//         message: `Employee ${conflictField} already exists!`,
+//       });
+//     }
+
+//     await client.db("Jobify").collection("employeeList").insertOne({
+//       name, email, mobile, selectedRole, gender, course,  createDate
+//     });
+
+//     return res.status(200).send({
+//       status: 1,
+//       message: "Employee created successfully!",
+//     });
+
+//   } catch (err) {
+//     console.error("Error creating employee:", err);
+//     return res.status(500).send({
+//       status: 0,
+//       message: "Error creating employee. Please try again later.",
+//     });
+//   }
+// });
+
+
+app.post("/newEemployee", upload.single('image'), async (req, res) => {
+  const { name, email, mobile, selectedRole, gender, course } = req.body;
   const createDate = new Date().toISOString().split('T')[0];
 
   try {
@@ -142,8 +214,10 @@ app.post("/newEemployee", async (req, res) => {
       });
     }
 
+    const imagePath = req.file ? req.file.path : null; // Get the path of the uploaded image
+
     await client.db("Jobify").collection("employeeList").insertOne({
-      name, email, mobile, selectedRole, gender, course,  createDate
+      name, email, mobile, selectedRole, gender, course, imagePath, createDate
     });
 
     return res.status(200).send({
@@ -171,7 +245,7 @@ app.get("/employeesList", async (req, res) => {
 });
 
 app.put("/updateEmployee/:id", async (req, res) => {
-  const { name, email, mobile, selectedRole, gender, course,} = req.body;
+  const { name, email, mobile, selectedRole, gender, course  } = req.body;
   const { id } = req.params;
 
   try {

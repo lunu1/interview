@@ -15,7 +15,7 @@ const EmployeeTable = () => {
         },
         {
             name:'Image',
-            selector:row =>  <img src={row.img} alt={row.name} height="50" /> ,
+            selector:row =>  <img src={`http://localhost:3333/${row.imagePath}`}  alt={row.name} height="50" /> ,
             sortable:true
         },
         {
@@ -45,7 +45,7 @@ const EmployeeTable = () => {
         },
         {
             name:'Course',
-            selector: row => Array.isArray(row.course) ? row.course.join(', ') : '',
+            selector: row => row.course,
             sortable:true
         },
         {

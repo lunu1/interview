@@ -1,4 +1,4 @@
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { Navigate, RouterProvider, createBrowserRouter } from "react-router-dom";
 import {
   HomeLayout,
   Landing,
@@ -22,15 +22,23 @@ import EditEmployee from "./pages/EditEmployeePage";
 
 checkDefaultTheme();
 
+function ProtectedRoute({children}){
+  const tocken = localStorage.getItem('token');
+  return tocken ? <div>{children}</div>:<Navigate replace to="/login" />
+}
+
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <HomeLayout />,
+    element: (
+    <HomeLayout />
+  ),
     errorElement: <Error />,
     children: [
       {
         index: true,
-        element: <Landing />
+        element:  <Landing />
+      
       },
 
       {
@@ -47,20 +55,35 @@ const router = createBrowserRouter([
       },
       {
         path: 'dashboard',
-        element: <DashboardLayout />,
+        element: (
+          <ProtectedRoute>
+        <DashboardLayout />
+        </ProtectedRoute>
+      ),
         children: [
           {
             index:true,
-            element:<Welcome/>
+            element:(
+              <ProtectedRoute>
+            <Welcome/>
+            </ProtectedRoute>)
           },
           
           {
             path:'employeeList',
-            element:<EmployeeList/>
+            element:(
+              <ProtectedRoute>
+            <EmployeeList/>
+            </ProtectedRoute>
+          )
           },
           {
             path:'createemployee',
-            element:<CreateEmployee/>
+            element:(
+              <ProtectedRoute>
+            <CreateEmployee/>
+            </ProtectedRoute>
+            )
           },
           {
             path:'editemployee/:id',
